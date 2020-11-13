@@ -63,14 +63,9 @@ class GenericProviderTest extends TestCase
         $this->assertLessThanOrEqual(2, strlen($decimals));
     }
 
-    public function testLetter()
-    {
-        $this->assertMatchesRegularExpression('/[a-z]/', self::$provider->letter());
-    }
-
     public function testRandomElements()
     {
-        $elements = [0, 1, 2, 3, 4];
+        $elements = ['value1', 'value2', 'value3', 'value4', 'value5'];
         $this->assertContains(self::$provider->randomElement($elements), $elements);
     }
 }

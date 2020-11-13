@@ -11,8 +11,11 @@ use YaFou\FakeMe\Provider\ProviderInterface;
  * @method digit(): int
  * @method integer(int $min = 0, int $max = null): int
  * @method float(float $min = 0, float $max = null, int $precision = null): float
- * @method letter(): string
  * @method randomElement(array $elements)
+ *
+ * @method letter(): string
+ * @method word(): string
+ * @method words(int $number, bool $stringify = false)
  */
 class Generator
 {
@@ -24,7 +27,7 @@ class Generator
     public function __construct(array $providers = [])
     {
         foreach (array_merge(self::DEFAULT_PROVIDERS, $providers) as $provider) {
-            $this->providers[] = new $provider();
+            $this->providers[] = new $provider($this);
         }
     }
 

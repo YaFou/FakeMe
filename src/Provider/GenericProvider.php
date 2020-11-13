@@ -11,7 +11,6 @@ class GenericProvider implements ProviderInterface
             'digit',
             'integer',
             'float',
-            'letter',
             'randomElement'
         ];
     }
@@ -48,13 +47,8 @@ class GenericProvider implements ProviderInterface
         return round($min + ($this->integer() / mt_getrandmax()) * ($max - $min), $precision);
     }
 
-    public function letter(): string
-    {
-        return chr($this->integer(97, 122));
-    }
-
     public function randomElement(array $elements)
     {
-        return array_rand($elements);
+        return $elements[$this->integer(0, count(array_keys($elements)) - 1)];
     }
 }

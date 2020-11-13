@@ -12,4 +12,9 @@ abstract class AbstractProvider implements ProviderInterface
     {
         $this->generator = $generator;
     }
+
+    public function getResourceProviders(): array
+    {
+        return [];
+    }
 }

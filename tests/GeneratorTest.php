@@ -30,6 +30,11 @@ class GeneratorTest extends TestCase
                 return ['function'];
             }
 
+            public function getResourceProviders(): array
+            {
+                return [];
+            }
+
             public function function ()
             {
                 return 'value';

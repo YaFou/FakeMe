@@ -53,6 +53,6 @@ class TextProviderTest extends TestCase
     public function testSentencesWithCustomNumberOfWords()
     {
         $sentence = self::$provider->sentences(1, 1, 5);
-        $this->assertLessThanOrEqual(4, count(explode(' ', $sentence)));
+        $this->assertLessThanOrEqual(5, count(explode(' ', $sentence)));
     }
 }

@@ -28,6 +28,7 @@ $content = [];
 
 foreach ($files as $file) {
     $fileName = str_replace($directory . DIRECTORY_SEPARATOR, '', $file);
+    $fileName = str_replace(DIRECTORY_SEPARATOR, '/', $fileName);
     $content[$fileName] = md5(file_get_contents($file));
 }
 

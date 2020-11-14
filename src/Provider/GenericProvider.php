@@ -2,7 +2,7 @@
 
 namespace YaFou\FakeMe\Provider;
 
-class GenericProvider extends AbstractProvider
+class GenericProvider implements ProviderInterface
 {
     public function getNames(): array
     {

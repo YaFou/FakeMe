@@ -2,20 +2,20 @@
 
 namespace YaFou\FakeMe\ResourceProvider;
 
-use LogicException;
-
-class GithubRepositoryResourceProvider implements FreshResourceProviderInterface
+class GithubRepositoryResourceProvider implements ResourceProviderInterface
 {
-    public const ALGORITHM_MD5 = 'md5';
-    public const ALGORITHM_SHA1 = 'sha1';
     private const URL = 'https://raw.githubusercontent.com/%s/%s/%s';
+    private const HASHES_FILE = 'hashes.json';
 
     private $owner;
     private $repository;
     private $ref;
     private $url;
     private $hashesFile;
-    private $hashAlgorithm;
+    private $cacheDirectory;
+    private $remoteHashes;
+    private $localHashes;
+    private $resolvedResources = [];
 
     public function __construct(string $owner, string $repository, string $ref, string $directory = null)
     {
@@ -29,31 +29,72 @@ class GithubRepositoryResourceProvider implements FreshResourceProviderInterface
         }
     }
 
-    public function setHashesFile(string $hashesFile, string $hashAlgorithm = self::ALGORITHM_MD5): void
+    public function enableCache(string $hashesFile, string $cacheDirectory = null): void
     {
+        if (null === $cacheDirectory) {
+            $cacheDirectory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'FakeMe';
+        }
+
         $this->hashesFile = $hashesFile;
-        $this->hashAlgorithm = $hashAlgorithm;
+        $this->cacheDirectory = $cacheDirectory;
     }
 
     public function getResource(string $name): array
     {
-        return $this->fetch(sprintf('%s/%s', $this->url, $name));
-    }
-
-    private function fetch(string $url): array
-    {
-        return json_decode(file_get_contents($url), true);
-    }
-
-    public function isFresh(string $name, string $content): bool
-    {
-        if (null === $this->hashesFile) {
-            throw new LogicException('You must define a hashes file and an algorithm');
+        if (isset($this->resolvedResources[$name])) {
+            return $this->resolvedResources[$name];
         }
 
-        $hash = ($this->hashAlgorithm)($content);
-        $hashes = $this->fetch(sprintf(self::URL . '/%s', $this->owner, $this->repository, $this->ref, $this->hashesFile));
+        if (null !== $this->hashesFile) {
+            $localHashesFile = $this->cacheDirectory . DIRECTORY_SEPARATOR . self::HASHES_FILE;
 
-        return $hashes[$name] === $hash;
+            if (!file_exists($this->cacheDirectory)) {
+                mkdir($this->cacheDirectory, 0777, true);
+            }
+
+            if (!file_exists($localHashesFile)) {
+                file_put_contents($localHashesFile, '{}');
+            }
+
+            if (null === $this->remoteHashes) {
+                $this->remoteHashes = $this->fetch(sprintf(
+                    self::URL . '/%s',
+                    $this->owner,
+                    $this->repository,
+                    $this->ref,
+                    $this->hashesFile
+                ));
+            }
+
+            if (null === $this->localHashes) {
+                $this->localHashes = $this->fetch($localHashesFile);
+            }
+
+            $hash = $this->remoteHashes[$name];
+
+            if (isset($this->localHashes[$name])) {
+                $hashes = $this->localHashes[$name];
+
+                if (in_array($hash, $hashes)) {
+                    return $this->resolvedResources[$name] = $this->fetch(
+                        $this->cacheDirectory . DIRECTORY_SEPARATOR . $hash
+                    );
+                }
+            }
+
+            $content = $this->fetch(sprintf('%s/%s', $this->url, $name));
+            file_put_contents($this->cacheDirectory . DIRECTORY_SEPARATOR . $hash, json_encode($content));
+            $this->localHashes[$name][] = $hash;
+            file_put_contents($localHashesFile, json_encode($this->localHashes));
+
+            return $this->resolvedResources[$name] = $content;
+        }
+
+        return $this->resolvedResources[$name] = $this->fetch(sprintf('%s/%s', $this->url, $name));
+    }
+
+    private function fetch(string $filename): array
+    {
+        return json_decode(file_get_contents($filename), true);
     }
 }

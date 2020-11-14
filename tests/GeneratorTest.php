@@ -27,7 +27,7 @@ class GeneratorTest extends TestCase
         $provider = new class implements ProviderInterface {
             public function getNames(): array
             {
-                return ['function'];
+                return ['value'];
             }
 
             public function getResourceProviders(): array
@@ -35,13 +35,13 @@ class GeneratorTest extends TestCase
                 return [];
             }
 
-            public function function ()
+            public function value()
             {
                 return 'value';
             }
         };
 
         $generator = new Generator([$provider]);
-        $this->assertSame('value', $generator->function());
+        $this->assertSame('value', $generator->value());
     }
 }

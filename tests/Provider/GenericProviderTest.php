@@ -2,7 +2,6 @@
 
 namespace YaFou\FakeMe\Tests\Provider;
 
-use YaFou\FakeMe\Generator;
 use YaFou\FakeMe\Provider\GenericProvider;
 use YaFou\FakeMe\Tests\TestCase;
 
@@ -12,7 +11,7 @@ class GenericProviderTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$provider = new GenericProvider(new Generator());
+        self::$provider = new GenericProvider();
     }
 
     public function testBoolean()
@@ -60,7 +59,7 @@ class GenericProviderTest extends TestCase
     public function testFloatWithCustomPrecision()
     {
         $float = self::$provider->float(0, null, 2);
-        $decimals = explode('.', $float)[1];
+        $decimals = explode('.', $float)[1] ?? '';
         $this->assertLessThanOrEqual(2, strlen($decimals));
     }
 

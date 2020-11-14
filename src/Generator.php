@@ -2,11 +2,14 @@
 
 namespace YaFou\FakeMe;
 
+use InvalidArgumentException;
 use LogicException;
+use YaFou\FakeMe\Provider\AddressProvider;
 use YaFou\FakeMe\Provider\GenericProvider;
 use YaFou\FakeMe\Provider\PersonProvider;
 use YaFou\FakeMe\Provider\ProviderInterface;
 use YaFou\FakeMe\Provider\TextProvider;
+use YaFou\FakeMe\Provider\UuidProvider;
 use YaFou\FakeMe\ResourceProvider\GithubRepositoryResourceProvider;
 use YaFou\FakeMe\ResourceProvider\ResourceProviderInterface;
 
@@ -26,13 +29,21 @@ use YaFou\FakeMe\ResourceProvider\ResourceProviderInterface;
  * @method firstName(string $gender = null): string
  * @method lastName(): string
  * @method name(string $gender = null): string
+ *
+ * @method country(): string
+ *
+ * @method uuid1(): string
+ * @method uuid4(): string
+ * @method uuid6(): string
  */
 class Generator
 {
     private const DEFAULT_PROVIDERS = [
         GenericProvider::class,
         TextProvider::class,
-        PersonProvider::class
+        PersonProvider::class,
+        AddressProvider::class,
+        UuidProvider::class
     ];
 
     private const OWNER = 'YaFou';
@@ -67,6 +78,13 @@ class Generator
 
     public function getResource(string $providerName, string $name): array
     {
+        if (!isset($this->resourceProviders[$providerName])) {
+            throw new InvalidArgumentException(sprintf(
+                'No resource provider found with the name "%s"',
+                $providerName
+            ));
+        }
+
         return $this->resourceProviders[$providerName]->getResource($name);
     }
 
@@ -84,5 +102,17 @@ class Generator
         }
 
         throw new LogicException(sprintf('No provider method found for "%s"', $name));
+    }
+
+    public function parse(string $subject): string
+    {
+        $result = preg_replace_callback('/{{(\w+)}}/', function (array $matches) {
+            return $this->{$matches[1]}();
+        }, $subject);
+
+        $result = str_replace('#', $this->digit(), $result);
+        $result = str_replace('?', $this->letter(), $result);
+
+        return $result;
     }
 }

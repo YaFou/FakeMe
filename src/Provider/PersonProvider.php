@@ -7,6 +7,11 @@ class PersonProvider extends AbstractProvider
     public const GENDER_MALE = 'male';
     public const GENDER_FEMALE = 'female';
 
+    private const NAME = [
+        'firstName lastName',
+        'title firstName lastName'
+    ];
+
     public function getNames(): array
     {
         return [
@@ -19,7 +24,7 @@ class PersonProvider extends AbstractProvider
 
     public function title(string $gender = null): string
     {
-        $titles = $this->generator->getResourceForLanguage('main', 'person.json')['titles'];
+        $titles = $this->getResourceForLanguage()['titles'];
 
         if (null === $gender) {
             return $this->generator->randomElement(array_merge(
@@ -33,12 +38,17 @@ class PersonProvider extends AbstractProvider
 
     public function name(string $gender = null): string
     {
-        return sprintf('%s %s', $this->firstName($gender), $this->lastName());
+        $result = $this->generator->randomElement(static::NAME);
+        $result = str_replace('firstName', $this->firstName($gender), $result);
+        $result = str_replace('lastName', $this->lastName(), $result);
+        $result = str_replace('title', $this->title($gender), $result);
+
+        return $result;
     }
 
     public function firstName(string $gender = null): string
     {
-        $firstNames = $this->generator->getResourceForLanguage('main', 'person.json')['firstNames'];
+        $firstNames = $this->getResourceForLanguage()['firstNames'];
 
         if (null === $gender) {
             return $this->generator->randomElement(array_merge(
@@ -53,7 +63,12 @@ class PersonProvider extends AbstractProvider
     public function lastName(): string
     {
         return $this->generator->randomElement(
-            $this->generator->getResourceForLanguage('main', 'person.json')['lastNames']
+            $this->getResourceForLanguage()['lastNames']
         );
+    }
+
+    protected function getResourceFile(): string
+    {
+        return 'person.json';
     }
 }

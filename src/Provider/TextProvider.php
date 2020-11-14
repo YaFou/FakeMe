@@ -43,7 +43,11 @@ class TextProvider extends AbstractProvider
 
     public function word(): string
     {
-        $words = $this->generator->getResource('main', 'text.json');
-        return $this->generator->randomElement($words);
+        return $this->generator->randomElement($this->getResource());
+    }
+
+    protected function getResourceFile(): string
+    {
+        return 'text.json';
     }
 }

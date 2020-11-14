@@ -2,6 +2,8 @@
 
 namespace YaFou\FakeMe\ResourceProvider;
 
+use InvalidArgumentException;
+
 class StorageResourceProvider implements ResourceProviderInterface
 {
     private $directory;
@@ -18,8 +20,14 @@ class StorageResourceProvider implements ResourceProviderInterface
             return $this->resolvedResources[$name];
         }
 
+        $filename = $this->directory . DIRECTORY_SEPARATOR . $name;
+
+        if (!file_exists($filename)) {
+            throw new InvalidArgumentException(sprintf('Failed to open "%s"', $filename));
+        }
+
         return $this->resolvedResources[$name] = json_decode(
-            file_get_contents($this->directory . DIRECTORY_SEPARATOR . $name),
+            file_get_contents($filename),
             true
         );
     }

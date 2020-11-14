@@ -11,11 +11,12 @@ class GithubRepositoryResourceProviderTest extends TestCase
     private const REPOSITORY = 'FakeMe';
     private const REF = 'main';
     private const RESOURCES_DIRECTORY = 'resources';
+    private const NAME = 'yafou/fakeme';
 
     public function testGetResource()
     {
         $provider = new GithubRepositoryResourceProvider(self::OWNER, self::REPOSITORY, self::REF);
-        $this->assertSame('yafou/fakeme', $provider->getResource('composer.json')['name']);
+        $this->assertSame('' . self::NAME . '', $provider->getResource('composer.json')['name']);
     }
 
     public function testGetResourceWithCustomDirectory()
@@ -32,6 +33,20 @@ class GithubRepositoryResourceProviderTest extends TestCase
 
     public function testGetResourceWithCache()
     {
+        $directory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'FakeMe_Tests';
+        $this->assertIsArray($this->makeProvider($directory)->getResource('text.json'));
+        $this->assertFileExists($directory . DIRECTORY_SEPARATOR . 'hashes.json');
+        $this->assertIsArray($this->makeProvider($directory)->getResource('text.json'));
+
+        foreach (glob($directory . DIRECTORY_SEPARATOR . '*') as $file) {
+            unlink($file);
+        }
+
+        rmdir($directory);
+    }
+
+    private function makeProvider(string $directory): GithubRepositoryResourceProvider
+    {
         $provider = new GithubRepositoryResourceProvider(
             self::OWNER,
             self::REPOSITORY,
@@ -39,22 +54,11 @@ class GithubRepositoryResourceProviderTest extends TestCase
             self::RESOURCES_DIRECTORY
         );
 
-        $directory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'FakeMe_Tests';
-
         $provider->enableCache(
             self::RESOURCES_DIRECTORY . '/hashes.json',
             $directory
         );
 
-        $this->assertIsArray($provider->getResource('text.json'));
-        $this->assertFileExists($directory . DIRECTORY_SEPARATOR . 'hashes.json');
-
-        $this->assertIsArray($provider->getResource('text.json'));
-
-        foreach (glob($directory . DIRECTORY_SEPARATOR . '*') as $file) {
-            unlink($file);
-        }
-
-        rmdir($directory);
+        return $provider;
     }
 }

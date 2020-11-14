@@ -2,8 +2,8 @@
 
 namespace YaFou\FakeMe\Tests\Provider;
 
-use YaFou\FakeMe\Generator;
 use YaFou\FakeMe\Provider\TextProvider;
+use YaFou\FakeMe\Tests\GeneratorMock;
 use YaFou\FakeMe\Tests\TestCase;
 
 class TextProviderTest extends TestCase
@@ -12,7 +12,7 @@ class TextProviderTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        self::$provider = new TextProvider(new Generator());
+        self::$provider = new TextProvider(new GeneratorMock());
     }
 
     public function testLetter()

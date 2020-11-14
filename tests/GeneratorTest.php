@@ -4,21 +4,20 @@ namespace YaFou\FakeMe\Tests;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use YaFou\FakeMe\Generator;
 use YaFou\FakeMe\Provider\ProviderInterface;
 
 class GeneratorTest extends TestCase
 {
     public function testCallFunction()
     {
-        $generator = new Generator();
+        $generator = new GeneratorMock();
         $this->assertIsBool($generator->boolean());
     }
 
     public function testCallUnknownFunction()
     {
         $this->expectException(LogicException::class);
-        $generator = new Generator();
+        $generator = new GeneratorMock();
         $generator->unknownFunction();
     }
 
@@ -41,7 +40,7 @@ class GeneratorTest extends TestCase
             }
         };
 
-        $generator = new Generator([$provider]);
+        $generator = new GeneratorMock([$provider]);
         $this->assertSame('value', $generator->value());
     }
 }
